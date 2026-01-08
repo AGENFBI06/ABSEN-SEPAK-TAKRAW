@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Takraw Semesta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS LANGSUNG DI SINI */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 900px; margin: 40px 20px; }
+
+        header { text-align: center; margin-bottom: 30px; }
+        header .date { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #888; font-weight: 600; }
+        header h1 { font-weight: 600; font-size: 2.2rem; margin: 10px 0 5px; color: #111; }
+        header .subtitle { color: #666; font-weight: 300; }
+
+        /* Input Section */
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+        }
+
+        input, select, button {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input { flex-grow: 1; }
+        input:focus, select:focus { border-color: #333; }
+
+        button {
+            background-color: #111;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            border: 1px solid #111;
+            transition: all 0.2s;
+        }
+
+        button:hover { background-color: #333; }
+
+        /* Layout Board */
+        .attendance-board { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { background: #ffffff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #eee; }
+        .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+        .column-header h2 { font-size: 1.2rem; font-weight: 600; }
+
+        .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+        .badge.green { background-color: #e6f4ea; color: #1e7e34; }
+        .badge.red { background-color: #fce8e6; color: #c53030; }
+
+        .player-list { list-style: none; min-height: 50px; }
+        .player-list li {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #f7f7f7;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .player-info { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .player-name { font-size: 0.95rem; color: #444; font-weight: 500; flex-grow: 1; }
+
+        .status-dot { height: 10px; width: 10px; background-color: #28a745; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1); }
+        .status-text { font-size: 0.8rem; color: #888; font-style: italic; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; }
+
+        .delete-btn {
+            background: none; border: none; color: #ccc;
+            font-size: 1.2rem; cursor: pointer; padding: 0 5px;
+            margin-left: 10px;
+        }
+        .delete-btn:hover { color: #c53030; }
+
+        footer { margin-top: 50px; text-align: center; font-size: 0.8rem; color: #aaa; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .attendance-board { grid-template-columns: 1fr; gap: 20px; }
+            .input-section { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span class="date" id="currentDate">Tanggal Hari Ini</span>
+            <h1>Absensi Takraw Semesta</h1>
+            <p class="subtitle">Input Kehadiran Manual</p>
+        </header>
+
+        <div class="input-section">
+            <input type="text" id="playerName" placeholder="Nama Pemain..." autocomplete="off">
+            <select id="playerStatus">
+                <option value="hadir">Hadir</option>
+                <option value="sakit">Sakit</option>
+                <option value="izin">Izin</option>
+                <option value="alpha">Tanpa Ket.</option>
+            </select>
+            <button onclick="addPlayer()">Tambah</button>
+        </div>
+
+        <main class="attendance-board">
+            <section class="column present-column">
+                <div class="column-header">
+                    <h2>Hadir</h2>
+                    <span class="badge green" id="count-present">0 Orang</span>
+                </div>
+                <ul class="player-list" id="list-present">
+                    </ul>
+            </section>
+
+            <section class="column absent-column">
+                <div class="column-header">
+                    <h2>Tidak Hadir</h2>
+                    <span class="badge red" id="count-absent">0 Orang</span>
+                </div>
+                <ul class="player-list" id="list-absent">
+                    </ul>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Takraw Semesta Club. Sistem Absensi Manual.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Set Tanggal
+        const dateElement = document.getElementById('currentDate');
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateElement.textContent = new Date().toLocaleDateString('id-ID', options);
+
+        // Fungsi Tambah Pemain
+        function addPlayer() {
+            const nameInput = document.getElementById('playerName');
+            const statusInput = document.getElementById('playerStatus');
+            
+            const name = nameInput.value.trim();
+            const status = statusInput.value;
+
+            // Cek apakah nama kosong
+            if (name === "") {
+                alert("Wajib isi nama pemain!");
+                return;
+            }
+
+            let targetListId = "";
+            let statusIndicator = "";
+
+            if (status === "hadir") {
+                targetListId = "list-present";
+                statusIndicator = `<span class="status-dot"></span>`;
+            } else {
+                targetListId = "list-absent";
+                const statusText = statusInput.options[statusInput.selectedIndex].text;
+                statusIndicator = `<span class="status-text">${statusText}</span>`;
+            }
+
+            // Buat elemen baru
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="player-info">
+                    <span class="player-name">${name}</span>
+                    ${statusIndicator}
+                </div>
+                <button class="delete-btn" onclick="removePlayer(this)">×</button>
+            `;
+
+            // Masukkan ke list HTML yang benar
+            const targetList = document.getElementById(targetListId);
+            if (targetList) {
+                targetList.appendChild(li);
+                updateCounters();
+            } else {
+                console.error("List tujuan tidak ditemukan!");
+            }
+
+            // Reset input
+            nameInput.value = "";
+            nameInput.focus();
+        }
+
+        // Fungsi Hapus
+        function removePlayer(button) {
+            button.parentElement.remove();
+            updateCounters();
+        }
+
+        // Fungsi Update Angka
+        function updateCounters() {
+            const presentCount = document.getElementById('list-present').children.length;
+            const absentCount = document.getElementById('list-absent').children.length;
+
+            document.getElementById('count-present').textContent = presentCount + " Orang";
+            document.getElementById('count-absent').textContent = absentCount + " Orang";
+        }
+
+        // Enter untuk submit
+        document.getElementById("playerName").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                addPlayer();
+            }
+        });
+    </script>
+</body>
+</html>
